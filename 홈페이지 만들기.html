@@ -230,6 +230,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // 관리자 이메일 설정 (선생님 계정)
+        const ADMIN_EMAIL = "teacher@school.com";
+
         // 1. 화면 전환 함수 (전역 함수로 등록)
         window.showSection = function(sectionId) {
             // 모든 섹션을 숨김
@@ -280,6 +283,11 @@
 
         // 5. 가정통신문 글쓰기 함수
         window.addNotice = async function() {
+            // 관리자 권한 확인
+            if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+                return alert("선생님만 글을 쓸 수 있습니다.");
+            }
+
             const content = document.getElementById('notice-content').value;
             if (!content) return alert("내용을 입력하세요.");
             
@@ -308,7 +316,13 @@
                 navLogin.classList.add('hidden');
                 navSignup.classList.add('hidden');
                 navLogout.classList.remove('hidden');
-                writeArea.classList.remove('hidden'); // 글쓰기 창 보이기
+                
+                // 관리자(선생님)인 경우에만 글쓰기 창 보이기
+                if (user.email === ADMIN_EMAIL) {
+                    writeArea.classList.remove('hidden');
+                } else {
+                    writeArea.classList.add('hidden');
+                }
             } else {
                 // 로그아웃 상태
                 navLogin.classList.remove('hidden');
