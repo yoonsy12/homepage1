@@ -134,6 +134,23 @@
         .btn-submit:hover {
             background-color: #007bff;
         }
+
+        /* 관리자용 삭제 버튼 스타일 */
+        .delete-btn {
+            display: none; /* 기본적으로 숨김 */
+            color: #dc3545;
+            background: white;
+            border: 1px solid #dc3545;
+            border-radius: 5px;
+            padding: 2px 8px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        /* 관리자 모드일 때만 보임 */
+        body.is-admin .delete-btn {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -147,6 +164,7 @@
         <button onclick="showSection('notice')">가정통신문</button>
         <button id="nav-login" onclick="showSection('login')">로그인</button>
         <button id="nav-signup" onclick="showSection('signup')">회원가입</button>
+        <button id="nav-students" onclick="showSection('students')" class="hidden">학생 관리</button>
         <button id="nav-logout" onclick="logout()" class="hidden">로그아웃</button>
     </nav>
 
@@ -175,6 +193,15 @@
             <div class="notice-list" id="notice-list">
                 <!-- 데이터베이스에서 불러온 내용이 여기에 표시됩니다 -->
                 <p style="text-align: center; color: #888;">로딩 중...</p>
+            </div>
+        </section>
+
+        <!-- 학생 관리 화면 (관리자 전용) -->
+        <section id="students" class="hidden">
+            <h2>🎓 학생 관리</h2>
+            <p>관리자님, 이곳에서 학생들을 관리할 수 있습니다.</p>
+            <div style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 10px;">
+                <p>🚧 학생 명단 및 관리 기능 준비 중...</p>
             </div>
         </section>
 
@@ -212,7 +239,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // 파이어베이스 설정 (제공해주신 정보)
         const firebaseConfig = {
@@ -305,11 +332,23 @@
             }
         }
 
-        // 6. 로그인 상태 감지 및 UI 변경
+        // 6. 글 삭제 함수 (관리자용)
+        window.deleteNotice = async function(id) {
+            if (!confirm("정말 이 글을 삭제하시겠습니까?")) return;
+            try {
+                await deleteDoc(doc(db, "notices", id));
+                alert("삭제되었습니다.");
+            } catch (error) {
+                alert("삭제 실패: " + error.message);
+            }
+        }
+
+        // 7. 로그인 상태 감지 및 UI 변경
         onAuthStateChanged(auth, (user) => {
             const navLogin = document.getElementById('nav-login');
             const navSignup = document.getElementById('nav-signup');
             const navLogout = document.getElementById('nav-logout');
+            const navStudents = document.getElementById('nav-students');
             const writeArea = document.getElementById('write-area');
             const adminMsg = document.getElementById('admin-welcome-msg');
 
@@ -322,9 +361,13 @@
                 // 관리자(선생님)인 경우에만 글쓰기 창 보이기
                 if (user.email === ADMIN_EMAIL) {
                     writeArea.classList.remove('hidden');
+                    navStudents.classList.remove('hidden');
+                    document.body.classList.add('is-admin'); // 관리자 스타일 적용
                     if(adminMsg) adminMsg.classList.remove('hidden');
                 } else {
                     writeArea.classList.add('hidden');
+                    navStudents.classList.add('hidden');
+                    document.body.classList.remove('is-admin');
                     if(adminMsg) adminMsg.classList.add('hidden');
                 }
             } else {
@@ -332,12 +375,14 @@
                 navLogin.classList.remove('hidden');
                 navSignup.classList.remove('hidden');
                 navLogout.classList.add('hidden');
+                navStudents.classList.add('hidden');
                 writeArea.classList.add('hidden'); // 글쓰기 창 숨기기
+                document.body.classList.remove('is-admin');
                 if(adminMsg) adminMsg.classList.add('hidden');
             }
         });
 
-        // 7. 가정통신문 실시간 불러오기 (Realtime Listener)
+        // 8. 가정통신문 실시간 불러오기 (Realtime Listener)
         const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
             const list = document.getElementById('notice-list');
@@ -353,7 +398,10 @@
                 item.className = 'notice-item';
                 item.innerHTML = `
                     <span>${data.content}</span>
-                    <span class="notice-date">${data.date}</span>
+                    <div>
+                        <span class="notice-date">${data.date}</span>
+                        <button class="delete-btn" onclick="deleteNotice('${doc.id}')">삭제</button>
+                    </div>
                 `;
                 list.appendChild(item);
             });
