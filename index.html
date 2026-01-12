@@ -158,6 +158,7 @@
         <!-- 홈 화면 -->
         <section id="home">
             <h2>환영합니다! 👋</h2>
+            <p id="admin-welcome-msg" class="hidden" style="color: #007bff; font-weight: bold; font-size: 1.3em;">관리자님 환영합니다! 👩‍🏫</p>
             <p>우리반 친구들을 위한 소통 공간입니다.</p>
             <p>오늘의 급식, 숙제, 그리고 재미있는 소식들을 확인해보세요.</p>
             <div style="text-align: center; margin-top: 50px;">
@@ -234,6 +235,9 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // 관리자 이메일 설정 (선생님 계정)
+        const ADMIN_EMAIL = "teacher@school.com";
+
         // 1. 화면 전환 함수 (전역 함수로 등록)
         window.showSection = function(sectionId) {
             // 모든 섹션을 숨김
@@ -280,6 +284,11 @@
 
         // 5. 가정통신문 글쓰기 함수
         window.addNotice = async function() {
+            // 관리자 권한 확인
+            if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
+                return alert("선생님만 글을 쓸 수 있습니다.");
+            }
+
             const content = document.getElementById('notice-content').value;
             if (!content) return alert("내용을 입력하세요.");
             
@@ -302,19 +311,29 @@
             const navSignup = document.getElementById('nav-signup');
             const navLogout = document.getElementById('nav-logout');
             const writeArea = document.getElementById('write-area');
+            const adminMsg = document.getElementById('admin-welcome-msg');
 
             if (user) {
                 // 로그인 상태
                 navLogin.classList.add('hidden');
                 navSignup.classList.add('hidden');
                 navLogout.classList.remove('hidden');
-                writeArea.classList.remove('hidden'); // 글쓰기 창 보이기
+                
+                // 관리자(선생님)인 경우에만 글쓰기 창 보이기
+                if (user.email === ADMIN_EMAIL) {
+                    writeArea.classList.remove('hidden');
+                    if(adminMsg) adminMsg.classList.remove('hidden');
+                } else {
+                    writeArea.classList.add('hidden');
+                    if(adminMsg) adminMsg.classList.add('hidden');
+                }
             } else {
                 // 로그아웃 상태
                 navLogin.classList.remove('hidden');
                 navSignup.classList.remove('hidden');
                 navLogout.classList.add('hidden');
                 writeArea.classList.add('hidden'); // 글쓰기 창 숨기기
+                if(adminMsg) adminMsg.classList.add('hidden');
             }
         });
 
@@ -322,6 +341,26 @@
         const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
         onSnapshot(q, (snapshot) => {
             const list = document.getElementById('notice-list');
+            list.innerHTML = ""; // 기존 목록 초기화
+            
+            if (snapshot.empty) {
+                list.innerHTML = "<p style='text-align:center'>등록된 알림이 없습니다.</p>";
+            }
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const item = document.createElement('div');
+                item.className = 'notice-item';
+                item.innerHTML = `
+                    <span>${data.content}</span>
+                    <span class="notice-date">${data.date}</span>
+                `;
+                list.appendChild(item);
+            });
+        });
+    </script>
+</body>
+</html>
             list.innerHTML = ""; // 기존 목록 초기화
             
             if (snapshot.empty) {

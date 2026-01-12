@@ -154,6 +154,7 @@
         <!-- 홈 화면 -->
         <section id="home">
             <h2>환영합니다! 👋</h2>
+            <p id="admin-welcome-msg" class="hidden" style="color: #007bff; font-weight: bold; font-size: 1.3em;">관리자님 환영합니다! 👩‍🏫</p>
             <p>우리반 친구들을 위한 소통 공간입니다.</p>
             <p>오늘의 급식, 숙제, 그리고 재미있는 소식들을 확인해보세요.</p>
             <div style="text-align: center; margin-top: 50px;">
@@ -310,6 +311,7 @@
             const navSignup = document.getElementById('nav-signup');
             const navLogout = document.getElementById('nav-logout');
             const writeArea = document.getElementById('write-area');
+            const adminMsg = document.getElementById('admin-welcome-msg');
 
             if (user) {
                 // 로그인 상태
@@ -320,8 +322,10 @@
                 // 관리자(선생님)인 경우에만 글쓰기 창 보이기
                 if (user.email === ADMIN_EMAIL) {
                     writeArea.classList.remove('hidden');
+                    if(adminMsg) adminMsg.classList.remove('hidden');
                 } else {
                     writeArea.classList.add('hidden');
+                    if(adminMsg) adminMsg.classList.add('hidden');
                 }
             } else {
                 // 로그아웃 상태
@@ -329,6 +333,7 @@
                 navSignup.classList.remove('hidden');
                 navLogout.classList.add('hidden');
                 writeArea.classList.add('hidden'); // 글쓰기 창 숨기기
+                if(adminMsg) adminMsg.classList.add('hidden');
             }
         });
 
