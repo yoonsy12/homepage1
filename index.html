@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<!-- 깃허브 페이지(GitHub Pages)로 호스팅하려면 이 파일의 이름을 index.html로 변경해서 업로드하세요. -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="초등학교 6학년 우리반 홈페이지입니다. 파이어베이스를 이용한 실시간 가정통신문과 로그인 기능을 제공합니다.">
+    <!-- 탭에 표시될 아이콘 (파비콘) 설정 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏫</text></svg>">
+    <title>6학년 우리반 홈페이지</title>
+    <style>
+        /* 전체 스타일 */
+        body {
+            font-family: 'Jua', 'Malgun Gothic', sans-serif; /* 귀여운 느낌의 폰트 권장 */
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* 헤더 */
+        header {
+            background-color: #4facfe;
+            background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        /* 네비게이션 */
+        nav {
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            margin: 0 15px;
+            cursor: pointer;
+            color: #555;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+
+        nav button:hover {
+            background-color: #e0f7fa;
+            color: #007bff;
+        }
+
+        /* 메인 컨텐츠 영역 */
+        main {
+            max-width: 800px;
+            margin: 30px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h2 {
+            border-bottom: 3px solid #4facfe;
+            padding-bottom: 10px;
+            color: #007bff;
+        }
+
+        /* 가정통신문 리스트 스타일 */
+        .notice-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .notice-item:hover {
+            transform: scale(1.02);
+            background-color: #fafafa;
+            cursor: pointer;
+        }
+
+        .notice-date {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        /* 폼 스타일 (로그인/회원가입) */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* 패딩 포함 너비 계산 */
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background-color: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #007bff;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏫 6학년 우리반 홈페이지</h1>
+    </header>
+
+    <nav>
+        <button onclick="showSection('home')">홈</button>
+        <button onclick="showSection('notice')">가정통신문</button>
+        <button id="nav-login" onclick="showSection('login')">로그인</button>
+        <button id="nav-signup" onclick="showSection('signup')">회원가입</button>
+        <button id="nav-logout" onclick="logout()" class="hidden">로그아웃</button>
+    </nav>
+
+    <main id="content">
+        <!-- 홈 화면 -->
+        <section id="home">
+            <h2>환영합니다! 👋</h2>
+            <p>우리반 친구들을 위한 소통 공간입니다.</p>
+            <p>오늘의 급식, 숙제, 그리고 재미있는 소식들을 확인해보세요.</p>
+            <div style="text-align: center; margin-top: 50px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3413/3413535.png" alt="학교 아이콘" width="150">
+            </div>
+        </section>
+
+        <!-- 가정통신문 화면 -->
+        <section id="notice" class="hidden">
+            <h2>📢 가정통신문 & 알림장</h2>
+            
+            <!-- 글쓰기 영역 (로그인 시 보임) -->
+            <div id="write-area" class="hidden" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                <input type="text" id="notice-content" placeholder="새로운 소식을 입력하세요" style="width: 75%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                <button onclick="addNotice()" style="width: 20%; padding: 10px; background: #4facfe; color: white; border: none; border-radius: 5px; cursor: pointer;">등록</button>
+            </div>
+
+            <div class="notice-list" id="notice-list">
+                <!-- 데이터베이스에서 불러온 내용이 여기에 표시됩니다 -->
+                <p style="text-align: center; color: #888;">로딩 중...</p>
+            </div>
+        </section>
+
+        <!-- 로그인 화면 -->
+        <section id="login" class="hidden">
+            <h2>🔐 로그인</h2>
+            <div class="form-group">
+                <label>이메일</label>
+                <input type="email" id="login-email" placeholder="이메일을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" id="login-pw" placeholder="비밀번호를 입력하세요">
+            </div>
+            <button class="btn-submit" onclick="login()">로그인 하기</button>
+        </section>
+
+        <!-- 회원가입 화면 -->
+        <section id="signup" class="hidden">
+            <h2>📝 회원가입</h2>
+            <div class="form-group">
+                <label>이메일</label>
+                <input type="email" id="signup-email" placeholder="이메일 주소 (예: student@school.com)">
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" id="signup-pw" placeholder="비밀번호 (6자리 이상)">
+            </div>
+            <button class="btn-submit" onclick="signup()">가입하기</button>
+        </section>
+    </main>
+
+    <script type="module">
+        // 파이어베이스 라이브러리 가져오기 (CDN)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 파이어베이스 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxuYOr0rmW-FZ9mZ_xhqVprblZOAon73M",
+            authDomain: "yoonsy12-8f65a.firebaseapp.com",
+            projectId: "yoonsy12-8f65a",
+            storageBucket: "yoonsy12-8f65a.firebasestorage.app",
+            messagingSenderId: "805668475758",
+            appId: "1:805668475758:web:64e1f089a5628d5bd7e77f",
+            measurementId: "G-S0C9WB904X"
+        };
+
+        // 파이어베이스 초기화
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 1. 화면 전환 함수 (전역 함수로 등록)
+        window.showSection = function(sectionId) {
+            // 모든 섹션을 숨김
+            const sections = document.querySelectorAll('main > section');
+            sections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            // 선택한 섹션만 보여줌
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        // 2. 회원가입 함수
+        window.signup = async function() {
+            const email = document.getElementById('signup-email').value;
+            const pw = document.getElementById('signup-pw').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, pw);
+                alert("가입 성공! 환영합니다.");
+                window.showSection('home');
+            } catch (error) {
+                alert("가입 실패: " + error.message);
+            }
+        }
+
+        // 3. 로그인 함수
+        window.login = async function() {
+            const email = document.getElementById('login-email').value;
+            const pw = document.getElementById('login-pw').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pw);
+                alert("로그인 되었습니다!");
+                window.showSection('home');
+            } catch (error) {
+                alert("로그인 실패: " + error.message);
+            }
+        }
+
+        // 4. 로그아웃 함수
+        window.logout = async function() {
+            await signOut(auth);
+            alert("로그아웃 되었습니다.");
+            window.showSection('home');
+        }
+
+        // 5. 가정통신문 글쓰기 함수
+        window.addNotice = async function() {
+            const content = document.getElementById('notice-content').value;
+            if (!content) return alert("내용을 입력하세요.");
+            
+            try {
+                await addDoc(collection(db, "notices"), {
+                    content: content,
+                    date: new Date().toISOString().split('T')[0], // YYYY-MM-DD 형식
+                    timestamp: serverTimestamp()
+                });
+                document.getElementById('notice-content').value = ""; // 입력창 비우기
+            } catch (error) {
+                console.error("글쓰기 오류:", error);
+                alert("글을 저장하지 못했습니다. (권한 문제일 수 있습니다)");
+            }
+        }
+
+        // 6. 로그인 상태 감지 및 UI 변경
+        onAuthStateChanged(auth, (user) => {
+            const navLogin = document.getElementById('nav-login');
+            const navSignup = document.getElementById('nav-signup');
+            const navLogout = document.getElementById('nav-logout');
+            const writeArea = document.getElementById('write-area');
+
+            if (user) {
+                // 로그인 상태
+                navLogin.classList.add('hidden');
+                navSignup.classList.add('hidden');
+                navLogout.classList.remove('hidden');
+                writeArea.classList.remove('hidden'); // 글쓰기 창 보이기
+            } else {
+                // 로그아웃 상태
+                navLogin.classList.remove('hidden');
+                navSignup.classList.remove('hidden');
+                navLogout.classList.add('hidden');
+                writeArea.classList.add('hidden'); // 글쓰기 창 숨기기
+            }
+        });
+
+        // 7. 가정통신문 실시간 불러오기 (Realtime Listener)
+        const q = query(collection(db, "notices"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('notice-list');
+            list.innerHTML = ""; // 기존 목록 초기화
+            
+            if (snapshot.empty) {
+                list.innerHTML = "<p style='text-align:center'>등록된 알림이 없습니다.</p>";
+            }
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const item = document.createElement('div');
+                item.className = 'notice-item';
+                item.innerHTML = `
+                    <span>${data.content}</span>
+                    <span class="notice-date">${data.date}</span>
+                `;
+                list.appendChild(item);
+            });
+        });
+    </script>
+</body>
+</html>
